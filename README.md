@@ -17,33 +17,33 @@ Python3, matplotlib, numpy, opencv 3.
 
 Steps to skew correction are as follows.
 
-1. Load the image and resize it to a particular size that will help to choose best connected component further
+1. Load the image and resize it to a particular size that will help to choose best connected component further:
     ```
     img='passport_front_copy.jpg'
     image = cv2.imread(img)
     image = cv2.resize(image, (600, 400))
     ```
 
-2. Do the Image preprocessing to get more visible clear text on plane background
+2. Do the Image preprocessing to get more visible clear text on plane background:
     ```
     gray = image_processing_passport_front(image). # look at the code for image preprocessing
     ```
 
-3. Convert the image to binary 0 or 1
+3. Convert the image to binary 0 or 1:
     ```
     (thresh, image_binary) = cv2.threshold(gray,0, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU).
     ```
-4. Do block segmentation and text descrimination using [pythonRLSA](https://pypi.org/project/pythonRLSA/)
+4. Do block segmentation and text descrimination using [pythonRLSA](https://pypi.org/project/pythonRLSA/):
     ```
     from pythonRLSA import rlsa
     image_rlsa_horizontal = rlsa.rlsa(image_binary, True, False,30)
     ```
 
-5. Inverse the binary image using opencv thresh_binary_inv method which we can extract the stats of that component
+5. Inverse the binary image using opencv thresh_binary_inv method which we can extract the stats of that component:
     ```
     (thresh, image_rlsa_horizontal_inv) = cv2.threshold(image_rlsa_horizontal,0, 255, cv2.THRESH_BINARY_INV | cv2.THRESH_OTSU)
     ```
-6. Applying opencv [connectedComponentsWithStats](https://www.pyimagesearch.com/2021/02/22/opencv-connected-component-labeling-and-analysis/) method to obtain the stats of each connected component
+6. Applying opencv [connectedComponentsWithStats](https://www.pyimagesearch.com/2021/02/22/opencv-connected-component-labeling-and-analysis/) method to obtain the stats of each connected component:
     ```
     output = cv2.connectedComponentsWithStats(image_rlsa_horizontal_inv, 4, cv2.CV_32S)
     (numLabels, labels, stats, centroids) = output
@@ -55,7 +55,7 @@ Steps to skew correction are as follows.
     3. The centroid/center (x, y)-coordinates of the component
     ```
 
-7. Finding out the angle of rotation with the help of stats obtained from the connectedComponentWithStats method and also positive or negative.
+7. Finding out the angle of rotation with the help of stats obtained from the connectedComponentWithStats method and also positive or negative:
    
      The known and unknown parameters are understood from the diagram. we can say that the area of the triangle is ```1/2(h-y_connected*w) and 2*area of triangle+area of              component=area of rectangle```. so the parameters x_connected, y_connected and skew anlge wether it is positive or negative, are calculated as shown in first and second figures
 
@@ -67,13 +67,13 @@ Steps to skew correction are as follows.
                            
                             
 
-8. Filter out the best connected components having rectangle shape by iterating through each component
+8. Filter out the best connected components having rectangle shape by iterating through each component:
    You can try with your own parameters and their values and see which works for your case. For example, i have taken width of the rectangle and alpha= x_connected/y_connected
     ```
     if w>=400 and alpha>=30: is true, then add to the total skew angle and at final calculate 
     the avg skew angle for all the filtered connected components
     ```
-9. Compensate the skew angle
+9. Compensate the skew angle :
    Here i have taken permissible skew angle 0.5 and if it is greater than the allowable, then skew correction takes place
     ```
     skew_allowable=0.5
